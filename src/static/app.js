@@ -49,10 +49,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (Array.isArray(details.participants) && details.participants.length > 0) {
           const ul = document.createElement("ul");
+          ul.className = "participants-list-ul";
+          ul.style.listStyle = "none";
           details.participants.forEach((p) => {
             const li = document.createElement("li");
             li.className = "participant-item";
-            li.textContent = p;
+            // Contenedor para el nombre y el icono
+            const spanName = document.createElement("span");
+            spanName.textContent = p;
+            li.appendChild(spanName);
+
+            // Ícono de eliminar (SVG)
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-participant-btn";
+            deleteBtn.title = "Eliminar participante";
+            deleteBtn.innerHTML = `<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'><path stroke='#c62828' stroke-width='2' d='M6 6l12 12M6 18L18 6'/></svg>`;
+            deleteBtn.onclick = async (e) => {
+              e.stopPropagation();
+              if (confirm(`¿Eliminar a ${p} de la actividad ${name}?`)) {
+                try {
+                  const res = await fetch(`/activities/${encodeURIComponent(name)}/unregister`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: p })
+                  });
+                  if (res.ok) {
+                    fetchActivities();
+                  } else {
+                    const data = await res.json();
+                    alert(data.detail || "Error al eliminar participante");
+                  }
+                } catch (err) {
+                  alert("Error de red al eliminar participante");
+                }
+              }
+            };
+            li.appendChild(deleteBtn);
             ul.appendChild(li);
           });
           participantsDiv.appendChild(ul);
@@ -97,9 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (response.ok) {
-        messageDiv.textContent = result.message;
-        messageDiv.className = "success";
-        signupForm.reset();
+  messageDiv.textContent = result.message;
+  messageDiv.className = "success";
+  signupForm.reset();
+  // Actualizar la lista de actividades y participantes sin recargar
+  fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";

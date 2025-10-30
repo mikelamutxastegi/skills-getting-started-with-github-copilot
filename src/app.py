@@ -1,9 +1,4 @@
-"""
-High School Management System API
-
-A super simple FastAPI application that allows students to view and sign up
-for extracurricular activities at Mergington High School.
-"""
+from pydantic import BaseModel
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -13,6 +8,27 @@ from pathlib import Path
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
+
+# Modelo para recibir email en unregister
+class UnregisterRequest(BaseModel):
+    email: str
+
+# Endpoint para eliminar participante
+@app.post("/activities/{activity_name}/unregister")
+def unregister_from_activity(activity_name: str, req: UnregisterRequest):
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    activity = activities[activity_name]
+    if req.email not in activity["participants"]:
+        raise HTTPException(status_code=404, detail="Participant not found in this activity")
+    activity["participants"].remove(req.email)
+    return {"message": f"Removed {req.email} from {activity_name}"}
+"""
+High School Management System API
+
+A super simple FastAPI application that allows students to view and sign up
+for extracurricular activities at Mergington High School.
+"""
 
 # Mount the static files directory
 current_dir = Path(__file__).parent
