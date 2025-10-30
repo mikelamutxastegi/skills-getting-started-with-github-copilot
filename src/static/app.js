@@ -20,12 +20,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
-        `;
+        // Reemplazar innerHTML por construcción DOM para añadir sección de participantes
+        activityCard.innerHTML = ""; // empezar limpio
+
+        const title = document.createElement("h4");
+        title.textContent = name;
+        activityCard.appendChild(title);
+
+        const desc = document.createElement("p");
+        desc.textContent = details.description;
+        activityCard.appendChild(desc);
+
+        const scheduleP = document.createElement("p");
+        scheduleP.innerHTML = `<strong>Schedule:</strong> ${details.schedule}`;
+        activityCard.appendChild(scheduleP);
+
+        const availP = document.createElement("p");
+        availP.innerHTML = `<strong>Availability:</strong> ${spotsLeft} spots left`;
+        activityCard.appendChild(availP);
+
+        // Sección de participantes
+        const participantsDiv = document.createElement("div");
+        participantsDiv.className = "participants-list";
+
+        const participantsTitle = document.createElement("p");
+        participantsTitle.innerHTML = "<strong>Participants:</strong>";
+        participantsDiv.appendChild(participantsTitle);
+
+        if (Array.isArray(details.participants) && details.participants.length > 0) {
+          const ul = document.createElement("ul");
+          details.participants.forEach((p) => {
+            const li = document.createElement("li");
+            li.className = "participant-item";
+            li.textContent = p;
+            ul.appendChild(li);
+          });
+          participantsDiv.appendChild(ul);
+        } else {
+          const none = document.createElement("p");
+          none.className = "info";
+          none.textContent = "No participants yet.";
+          participantsDiv.appendChild(none);
+        }
+
+        activityCard.appendChild(participantsDiv);
 
         activitiesList.appendChild(activityCard);
 
